@@ -36,36 +36,61 @@ public class PopulationManager : MonoBehaviour
         }
     }
 
+
+
+    void BreedNewPopulation()
+    {
+        List<GameObject> newPopulation = new List<GameObject>();
+        //get rid of unfit individuals
+        List<GameObject> sortedList = population.OrderByDescending(o => o.GetComponent<DNA>().timeToDie).ToList();
+
+        population.Clear();
+        //breed upper half of sorted list
+        for (int i = (int)(sortedList.Count / 2.0f) - 1; i < sortedList.Count - 1; i++)
+        {
+            population.Add(Breed(sortedList[i], sortedList[i + 1]));
+            population.Add(Breed(sortedList[i + 1], sortedList[i]));
+        }
+
+        //destroy all parents and previous population
+        for (int i = 0; i < sortedList.Count; i++)
+        {
+            Destroy(sortedList[i]);
+        }
+        generation++;
+    }
+
     // Update is called once per frame
     void Update()
     {
-        elapsed = Time.deltaTime;
-        if(elapsed == trialTime)
+        elapsed += Time.deltaTime;
+        if (elapsed > trialTime)
         {
             BreedNewPopulation();
             elapsed = 0;
         }
     }
 
-    void BreedNewPopulation()
+    GameObject Breed(GameObject parent1, GameObject parent2)
     {
-        List<GameObject> newPopulation = new List<GameObject> ();
-
-        List<GameObject> sortedPopulation = population.OrderBy(x => x.GetComponent<DNA>().timeToDie).ToList();
-
-        population.Clear();
-
-        for(int i = (int)(sortedPopulation.Count/2.0f)-1; i< sortedPopulation.Count; i++)
+        Vector3 pos = new Vector3(Random.Range(-30.2f, 30.2f), Random.Range(-11.5f, 11.5f), 0);
+        GameObject go = Instantiate(personPrefab, pos, Quaternion.identity);
+        DNA dna1 = parent1.GetComponent<DNA>();
+        DNA dna2 = parent2.GetComponent<DNA>();
+        // swap them around. 
+        if (Random.Range(0, 10) < 8)
         {
-            population.Add(Breed(sortedPopulation[i], sortedPopulation[i+1]));
-            population.Add(Breed(sortedPopulation[i+1], sortedPopulation[i ]));
+            go.GetComponent<DNA>().r = Random.Range(0, 10) < 5 ? dna1.r : dna2.r;
+            go.GetComponent<DNA>().g = Random.Range(0, 10) < 5 ? dna1.g : dna2.g;
+            go.GetComponent<DNA>().b = Random.Range(0, 10) < 5 ? dna1.b : dna2.b;
         }
-        generation++;
-
-    }
-
-    GameObject Breed(GameObject one, GameObject two)
-    {
-        return new GameObject();
+        else
+        {
+            go.GetComponent<DNA>().r = Random.Range(0.0f, 1.0f);
+            go.GetComponent<DNA>().g = Random.Range(0.0f, 1.0f);
+            go.GetComponent<DNA>().b = Random.Range(0.0f, 1.0f);
+        }
+        // population.Add(go);
+        return go;
     }
 }
